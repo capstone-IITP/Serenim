@@ -5,12 +5,14 @@ import BreathingAnimation from './components/BreathingAnimation'
 import InteractiveSphere from './components/InteractiveSphere'
 import BiometricScanner from './components/BiometricScanner'
 import { motion } from 'framer-motion'
+import { useTheme } from './theme/ThemeContext'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'2d' | '3d' | 'biometrics'>('2d')
   const [breathingPhase, setBreathingPhase] = useState<'inhale' | 'hold' | 'exhale'>('inhale')
   const [isActive, setIsActive] = useState(true)
   const [userName, setUserName] = useState("Guest")
+  const { theme } = useTheme()
 
   // This effect allows the parent to be aware of the breathing state
   // from the BreathingAnimation component for synchronizing the 3D visualization
@@ -42,8 +44,8 @@ export default function Home() {
         transition={{ duration: 0.3 }}
       >
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-opacity-10 rounded-full blur-3xl -mr-10 -mt-10" style={{ backgroundColor: `var(--primary)` }}></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-opacity-10 rounded-full blur-3xl -ml-10 -mb-10" style={{ backgroundColor: `var(--accent)` }}></div>
         
         {/* Title area with glow effect */}
         <motion.div
@@ -53,7 +55,10 @@ export default function Home() {
           className="relative z-10"
         >
           <motion.h1 
-            className="text-5xl font-bold mb-2 text-white text-glow-strong bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-indigo-300"
+            className="text-5xl font-bold mb-2 text-white text-glow-strong bg-clip-text text-transparent"
+            style={{
+              backgroundImage: `linear-gradient(to right, var(--primary-light), var(--accent-light))`
+            }}
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             transition={{ 
@@ -73,7 +78,7 @@ export default function Home() {
               onClick={() => setActiveTab('2d')} 
               className={`px-4 py-2 rounded-full transition-all duration-300 ${
                 activeTab === '2d' 
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium' 
+                  ? 'primary-gradient primary-button text-white font-medium' 
                   : 'bg-white/5 text-white/60 hover:bg-white/10'
               }`}
             >
@@ -83,7 +88,7 @@ export default function Home() {
               onClick={() => setActiveTab('3d')} 
               className={`px-4 py-2 rounded-full transition-all duration-300 ${
                 activeTab === '3d' 
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium' 
+                  ? 'primary-gradient primary-button text-white font-medium' 
                   : 'bg-white/5 text-white/60 hover:bg-white/10'
               }`}
             >
@@ -93,7 +98,7 @@ export default function Home() {
               onClick={() => setActiveTab('biometrics')} 
               className={`px-4 py-2 rounded-full transition-all duration-300 ${
                 activeTab === 'biometrics' 
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium' 
+                  ? 'primary-gradient primary-button text-white font-medium' 
                   : 'bg-white/5 text-white/60 hover:bg-white/10'
               }`}
             >

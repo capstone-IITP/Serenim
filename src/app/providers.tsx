@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import CosmicLoader from './components/CosmicLoader';
 
@@ -16,7 +16,8 @@ export const LoadingContext = createContext<LoadingContextType>({
 
 export const useLoading = () => useContext(LoadingContext);
 
-export default function Providers({ children }: { children: ReactNode }) {
+// Component that uses useSearchParams which requires Suspense
+function NavigationAwareProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -54,5 +55,21 @@ export default function Providers({ children }: { children: ReactNode }) {
         {children}
       </div>
     </LoadingContext.Provider>
+  );
+}
+
+// Main provider component with Suspense
+export default function Providers({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-t-purple-600 border-r-transparent border-b-purple-600 border-l-transparent animate-spin rounded-full mx-auto mb-4"></div>
+        <p className="text-white/70">Loading...</p>
+      </div>
+    </div>}>
+      <NavigationAwareProvider>
+        {children}
+      </NavigationAwareProvider>
+    </Suspense>
   );
 }

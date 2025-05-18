@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import * as THREE from 'three'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -23,12 +23,12 @@ function ParticleField() {
       const theta = THREE.MathUtils.randFloatSpread(360)
       const phi = THREE.MathUtils.randFloatSpread(360)
       
+      const x = radius * Math.sin(theta) * Math.cos(phi)
+      const y = radius * Math.sin(theta) * Math.sin(phi)
+      const z = radius * Math.cos(theta)
+      
       temp.push({
-        position: [
-          radius * Math.sin(theta) * Math.cos(phi),
-          radius * Math.sin(theta) * Math.sin(phi),
-          radius * Math.cos(theta)
-        ],
+        position: [x, y, z] as [number, number, number],
         scale: Math.random() * 0.5 + 0.2,
         speed: Math.random() * 0.05 + 0.01
       })
@@ -47,20 +47,22 @@ function ParticleField() {
 
 // Individual particle
 function Particle({ position, scale, speed }: ParticleProps) {
-  const mesh = useMemo(() => new THREE.Object3D(), [])
+  const meshRef = useRef<THREE.Mesh>(null)
   
   useFrame((state) => {
+    if (!meshRef.current) return
+    
     const time = state.clock.getElapsedTime()
-    mesh.position.set(
+    meshRef.current.position.set(
       position[0] + Math.sin(time * speed) * 0.3,
       position[1] + Math.cos(time * speed) * 0.3,
       position[2] + Math.sin(time * speed + position[0]) * 0.3
     )
-    mesh.scale.setScalar(scale * (1 + 0.1 * Math.sin(time * 2)))
+    meshRef.current.scale.setScalar(scale * (1 + 0.1 * Math.sin(time * 2)))
   })
   
   return (
-    <mesh ref={mesh} position={position}>
+    <mesh ref={meshRef} position={position}>
       <sphereGeometry args={[0.05, 8, 8]} />
       <meshBasicMaterial color={new THREE.Color().setHSL(0.7 + Math.random() * 0.2, 0.8, 0.6 + Math.random() * 0.4)} />
     </mesh>
