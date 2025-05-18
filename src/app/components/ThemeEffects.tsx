@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useTheme, ThemeOption } from '../theme/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -8,9 +8,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function ThemeEffects() {
   const { theme } = useTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [mounted, setMounted] = useState(false);
+  
+  // Mark component as mounted on client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  // Prevent rendering canvas effects during SSR
+  if (!mounted) {
+    return null;
+  }
   
   // Effect for drawing particles based on the current theme
   useEffect(() => {
+    if (!mounted) return; // Skip during SSR
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
     
@@ -77,8 +90,8 @@ export default function ThemeEffects() {
       life: number;
       
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.x = Math.random() * canvas!.width;
+        this.y = Math.random() * canvas!.height;
         this.size = Math.random() * settings.baseSize + 0.5;
         this.speedX = (Math.random() - 0.5) * settings.baseSpeed;
         this.speedY = (Math.random() - 0.5) * settings.baseSpeed;
@@ -91,12 +104,12 @@ export default function ThemeEffects() {
         this.y += this.speedY;
         this.life--;
         
-        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        if (this.x < 0 || this.x > canvas!.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvas!.height) this.speedY *= -1;
         
         if (this.life <= 0) {
-          this.x = Math.random() * canvas.width;
-          this.y = Math.random() * canvas.height;
+          this.x = Math.random() * canvas!.width;
+          this.y = Math.random() * canvas!.height;
           this.life = Math.random() * 100 + 100;
         }
       }
@@ -107,11 +120,11 @@ export default function ThemeEffects() {
         if (settings.colorShift) {
           // For themes with colorShift, gradually shift the color based on position
           if (theme === 'aurora') {
-            const hue = (this.x / canvas.width) * 60 + 170; // Teal to blue range
+            const hue = (this.x / canvas!.width) * 60 + 170; // Teal to blue range
             const hsla = `hsla(${hue}, 70%, 50%, ${this.opacity})`;
             context.fillStyle = hsla;
           } else if (theme === 'ember') {
-            const hue = (this.x / canvas.width) * 50 + 10; // Red to amber range
+            const hue = (this.x / canvas!.width) * 50 + 10; // Red to amber range
             const hsla = `hsla(${hue}, 80%, 55%, ${this.opacity})`;
             context.fillStyle = hsla;
           }
@@ -134,7 +147,7 @@ export default function ThemeEffects() {
     // Animation loop
     let animationFrameId: number;
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas!.width, canvas!.height);
       
       // Draw and update particles
       particles.forEach((particle) => {
@@ -144,20 +157,20 @@ export default function ThemeEffects() {
       
       if (theme === 'aurora') {
         // Add aurora-specific effect: subtle wave at bottom
-        const gradient = ctx.createLinearGradient(0, canvas.height * 0.7, 0, canvas.height);
+        const gradient = ctx.createLinearGradient(0, canvas!.height * 0.7, 0, canvas!.height);
         gradient.addColorStop(0, 'rgba(20, 184, 166, 0)');
         gradient.addColorStop(1, 'rgba(20, 184, 166, 0.05)');
         ctx.fillStyle = gradient;
         
         ctx.beginPath();
-        ctx.moveTo(0, canvas.height);
+        ctx.moveTo(0, canvas!.height);
         
-        for (let i = 0; i < canvas.width; i++) {
+        for (let i = 0; i < canvas!.width; i++) {
           const waveHeight = Math.sin(i * 0.01 + Date.now() * 0.001) * 20;
-          ctx.lineTo(i, canvas.height * 0.85 + waveHeight);
+          ctx.lineTo(i, canvas!.height * 0.85 + waveHeight);
         }
         
-        ctx.lineTo(canvas.width, canvas.height);
+        ctx.lineTo(canvas!.width, canvas!.height);
         ctx.closePath();
         ctx.fill();
       }
@@ -166,19 +179,19 @@ export default function ThemeEffects() {
         // Add ember-specific effect: subtle flame at bottom
         const flameCount = 5;
         for (let i = 0; i < flameCount; i++) {
-          const x = canvas.width * (i + 0.5) / flameCount;
+          const x = canvas!.width * (i + 0.5) / flameCount;
           const height = Math.sin(Date.now() * 0.002 + i) * 40 + 60;
           
           const gradient = ctx.createRadialGradient(
-            x, canvas.height, 0,
-            x, canvas.height, height
+            x, canvas!.height, 0,
+            x, canvas!.height, height
           );
           gradient.addColorStop(0, 'rgba(245, 158, 11, 0.15)');
           gradient.addColorStop(1, 'rgba(245, 158, 11, 0)');
           
           ctx.fillStyle = gradient;
           ctx.beginPath();
-          ctx.arc(x, canvas.height, height, 0, Math.PI * 2);
+          ctx.arc(x, canvas!.height, height, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -186,8 +199,8 @@ export default function ThemeEffects() {
       if (theme === 'midnight') {
         // Add midnight-specific effect: subtle star twinkles
         for (let i = 0; i < 10; i++) {
-          const x = Math.random() * canvas.width;
-          const y = Math.random() * canvas.height * 0.7;
+          const x = Math.random() * canvas!.width;
+          const y = Math.random() * canvas!.height * 0.7;
           const size = Math.random() * 2 + 1;
           const opacity = Math.sin(Date.now() * 0.003 + i) * 0.4 + 0.6;
           
@@ -208,7 +221,7 @@ export default function ThemeEffects() {
       window.removeEventListener('resize', setCanvasSize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [theme]);
+  }, [theme, mounted]);
   
   return (
     <>
