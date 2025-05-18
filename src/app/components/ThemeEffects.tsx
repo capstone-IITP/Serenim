@@ -15,12 +15,7 @@ export default function ThemeEffects() {
     setMounted(true);
   }, []);
   
-  // Prevent rendering canvas effects during SSR
-  if (!mounted) {
-    return null;
-  }
-  
-  // Effect for drawing particles based on the current theme
+  // Effect for drawing particles based on the current theme - moved BEFORE conditional return
   useEffect(() => {
     if (!mounted) return; // Skip during SSR
     
@@ -222,6 +217,11 @@ export default function ThemeEffects() {
       cancelAnimationFrame(animationFrameId);
     };
   }, [theme, mounted]);
+  
+  // Prevent rendering canvas effects during SSR
+  if (!mounted) {
+    return null;
+  }
   
   return (
     <>
